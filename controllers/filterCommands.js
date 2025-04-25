@@ -1,127 +1,99 @@
 import User from '../models/User.js';
-import { 
-  VALID_LEVELS, 
-  VALID_WORKMODES, 
-  VALID_CONTRACTS, 
-  VALID_COMPANY_SIZES,
-  VALID_EXPERIENCES
-} from '../configs/constants.js';
-import { capitalizeFirstLetter, formatFilters } from '../utils/helpers.js';
+import { VALID } from '../configs/constants.js';
+import { capitalize, formatFilters } from '../utils/helpers.js';
 
-const updateFilter = async (ctx, filterField, value, validation = null) => {
+const validateInput = (value, options, field) => {
+  if (!options.includes(value)) throw `Opções válidas para ${field}: ${options.join(', ')}`;
+};
+
+const updateFilter = async (ctx, field, value, validation) => {
   try {
-    if (validation && !validation.includes(value)) {
-      return ctx.reply(`❌ Valor inválido. Opções válidas: ${validation.join(', ')}`);
-    }
-
-    const user = await User.findOneAndUpdate(
+    if (validation) validateInput(value, validation, field);
+    
+    await User.updateOne(
       { telegramId: ctx.from.id },
-      { $set: { [`filters.${filterField}`]: value } },
-      { new: true }
+      { $set: { [`filters.${field}`]: value } }
     );
-
-    ctx.reply(`✅ ${capitalizeFirstLetter(filterField)} definido como: ${value}`);
+    
+    ctx.reply(`✅ ${capitalize(field)} definido para: ${value}`);
   } catch (error) {
-    console.error(`Error in ${filterField}Command:`, error);
-    ctx.reply(`❌ Ocorreu um erro ao atualizar ${filterField}.`);
+    ctx.reply(`❌ Erro: ${error}`);
   }
 };
 
+// Comandos Específicos
 export const languageCommand = async (ctx) => {
   try {
-    const input = ctx.message.text.replace('/language', '').trim();
+    const input = ctx.message.text.split(' ').slice(1).join(' ');
+    if (!input) throw 'Informe tecnologias separadas por vírgula';
     
-    if (!input) {
-      return ctx.reply('❌ Informe as tecnologias. Ex: /language Node.js, Python');
-    }
-    
-    const languages = input.split(',').map(lang => lang.trim());
-    
-    const user = await User.findOneAndUpdate(
+    const languages = [...new Set(input.split(',').map(lang => lang.trim()))];
+    await User.updateOne(
       { telegramId: ctx.from.id },
-      { $set: { 'filters.languages': languages } },
-      { new: true }
+      { $set: { 'filters.languages': languages } }
     );
-    
-    ctx.reply(`✅ Tecnologias salvas: ${user.filters.languages.join(', ')}`);
+    ctx.reply(`✅ Linguagens salvas:\n${languages.join(', ')}`);
   } catch (error) {
-    console.error('Error in languageCommand:', error);
-    ctx.reply('❌ Ocorreu um erro ao salvar suas preferências.');
+    ctx.reply(`❌ ${error}`);
   }
 };
 
 export const levelCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/level', '').trim();
-  await updateFilter(ctx, 'level', capitalizeFirstLetter(input), VALID_LEVELS);
+  const input = capitalize(ctx.message.text.split(' ')[1] || 'Todos');
+  await updateFilter(ctx, 'level', input, VALID.LEVELS);
 };
 
 export const salaryCommand = async (ctx) => {
-  try {
-    const input = ctx.message.text.replace('/salary', '').trim();
-    const salary = parseInt(input);
-    
-    if (isNaN(salary)) {
-      return ctx.reply('❌ Valor inválido. Ex: /salary 5000');
-    }
-    
-    await updateFilter(ctx, 'salary', salary);
-  } catch (error) {
-    console.error('Error in salaryCommand:', error);
-    ctx.reply('❌ Ocorreu um erro ao atualizar seu salário mínimo.');
-  }
+  const input = ctx.message.text.split(' ')[1];
+  if (!input || isNaN(input)) return ctx.reply('❌ Informe um valor numérico');
+  await updateFilter(ctx, 'salary', Number(input));
 };
 
 export const workmodeCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/workmode', '').trim();
-  await updateFilter(ctx, 'workMode', capitalizeFirstLetter(input), VALID_WORKMODES);
-};
-
-export const searchtypeCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/searchtype', '').trim();
-  await updateFilter(ctx, 'searchType', capitalizeFirstLetter(input));
-};
-
-export const locationCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/location', '').trim();
-  await updateFilter(ctx, 'location', input);
+  const input = capitalize(ctx.message.text.split(' ')[1] || 'Todos');
+  await updateFilter(ctx, 'workMode', input, VALID.WORKMODES);
 };
 
 export const postdateCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/postdate', '').trim();
-  await updateFilter(ctx, 'postDate', input);
+  const input = ctx.message.text.split(' ')[1] || ('Todos');
+  await updateFilter(ctx, 'postDate', input, VALID.POSTDATES);
 };
 
 export const contractCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/contract', '').trim();
-  await updateFilter(ctx, 'contract', capitalizeFirstLetter(input), VALID_CONTRACTS);
+  const input = capitalize(ctx.message.text.split(' ')[1] || 'Todos');
+  await updateFilter(ctx, 'contract', input, VALID.CONTRACTS);
 };
 
 export const companysizeCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/companysize', '').trim();
-  await updateFilter(ctx, 'companySize', capitalizeFirstLetter(input), VALID_COMPANY_SIZES);
-};
-
-export const industryCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/industry', '').trim();
-  await updateFilter(ctx, 'industry', input);
+  const input = capitalize(ctx.message.text.split(' ')[1] || 'Todos');
+  await updateFilter(ctx, 'companySize', input, VALID.COMPANY_SIZES);
 };
 
 export const experienceCommand = async (ctx) => {
-  const input = ctx.message.text.replace('/experience', '').trim();
-  await updateFilter(ctx, 'experience', input, VALID_EXPERIENCES);
+  const input = ctx.message.text.split(' ')[1] || ('Todos');
+  await updateFilter(ctx, 'experience', input, VALID.EXPERIENCES);
 };
 
 export const filtersCommand = async (ctx) => {
   try {
     const user = await User.findOne({ telegramId: ctx.from.id });
-    
-    if (!user) {
-      return ctx.reply('❌ Use /start para configurar seus filtros primeiro.');
-    }
-    
-    ctx.replyWithMarkdown(`🔍 *Seus Filtros Atuais*\n\n${formatFilters(user.filters)}`);
+    ctx.replyWithMarkdown(formatFilters(user.filters));
   } catch (error) {
-    console.error('Error in filtersCommand:', error);
-    ctx.reply('❌ Ocorreu um erro ao recuperar seus filtros.');
+    ctx.reply('❌ Use /start primeiro');
   }
+};
+
+export const searchtypeCommand = async (ctx) => {
+  const input = capitalize(ctx.message.text.split(' ')[1] || 'Todos');
+  await updateFilter(ctx, 'searchType', input, VALID.SEARCHTYPES);
+};
+
+export const locationCommand = async (ctx) => {
+  const input = ctx.message.text.split(' ').slice(1).join(' ') || 'Todos';
+  await updateFilter(ctx, 'location', input);
+};
+
+export const industryCommand = async (ctx) => {
+  const input = capitalize(ctx.message.text.split(' ').slice(1).join(' ') || 'Todos');
+  await updateFilter(ctx, 'industry', input, VALID.INDUSTRIES);
 };

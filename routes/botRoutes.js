@@ -1,4 +1,3 @@
-import { Telegraf } from 'telegraf';
 import {
   startCommand,
   helpCommand,
