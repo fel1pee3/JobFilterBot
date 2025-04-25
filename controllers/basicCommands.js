@@ -25,33 +25,33 @@ export const startCommand = async (ctx) => {
 
 export const helpCommand = (ctx) => {
   ctx.replyWithMarkdown(`
-*🛠 COMANDOS DISPONÍVEIS*
+  *🛠 COMANDOS DISPONÍVEIS*
 
-*⚙️ Configurar Filtros:*
-/language [tecnologias] - Ex: /language Node.js, Python
-/level [${VALID.LEVELS.join('|')}]
-/salary [valor]
-/workmode [${VALID.WORKMODES.join('|')}]
-/contract [${VALID.CONTRACTS.join('|')}]
-/companysize [${VALID.COMPANY_SIZES.join('|')}]
-/postdate [${VALID.POSTDATES.join('|')}]
+  *⚙️ Configurar Filtros:*
+  /language [tecnologias] - Ex: /language Node.js, Python
+  /level [${VALID.LEVELS.join('|')}]
+  /salary [valor]
+  /workmode [${VALID.WORKMODES.join('|')}]
+  /contract [${VALID.CONTRACTS.join('|')}]
+  /companysize [${VALID.COMPANY_SIZES.join('|')}]
+  /postdate [${VALID.POSTDATES.join('|')}]
 
-*🔍 Ações:*
-/search - Buscar vagas
-/filters - Ver filtros atuais
-/reset - Resetar filtros
-/commands - Lista rápida
-`);
+  *🔍 Ações:*
+  /search - Buscar vagas
+  /filters - Ver filtros atuais
+  /reset - Resetar filtros
+  /commands - Lista rápida
+  `);
 };
 
 export const commandsCommand = (ctx) => {
   ctx.replyWithMarkdown(`
-📜 *Comandos Rápidos:*
-/search /filters /reset
-/level /salary /workmode
-/language /contract /companysize
-/postdate /help
-`);
+  📜 *Comandos Rápidos:*
+  /search /filters /reset
+  /level /salary /workmode
+  /language /contract /companysize
+  /postdate /help
+  `);
 };
 
 export const resetCommand = async (ctx) => {
