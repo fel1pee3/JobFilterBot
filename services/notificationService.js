@@ -5,21 +5,21 @@ import { formatJobMessage } from '../utils/helpers.js';
 export const sendJobNotifications = async (bot) => {
   try {
     const users = await User.find();
-    
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     for (const user of users) {
-      const jobs = await Job.find({
-        // Filtros baseados nas preferências do usuário
-        $or: [
-          { technologies: { $in: user.filters.languages } },
-          { level: user.filters.level !== 'Todos' ? user.filters.level : { $exists: true } },
-          { 'salary.min': { $gte: user.filters.salary } }
-        ]
-      }).limit(5);
+      const query = {
+        postedAt: { $gte: yesterday },
+        ...buildFiltersQuery(user.filters)
+      };
+
+      const jobs = await Job.find(query).limit(3);
       
       if (jobs.length > 0) {
         await bot.telegram.sendMessage(
           user.telegramId,
-          `🔔 ${jobs.length} novas vagas que podem te interessar:`
+          `🔔 *${jobs.length} novas vagas para você!*`,
+          { parse_mode: 'Markdown' }
         );
         
         for (const job of jobs) {
@@ -32,6 +32,15 @@ export const sendJobNotifications = async (bot) => {
       }
     }
   } catch (error) {
-    console.error('❌ Erro ao enviar notificações:', error);
+    console.error('Erro nas notificações:', error.message);
   }
+};
+
+const buildFiltersQuery = (filters) => {
+  const query = {};
+  if (filters.languages.length > 0) query.technologies = { $all: filters.languages };
+  if (filters.level !== 'Todos') query.level = filters.level;
+  if (filters.salary > 0) query['salary.min'] = { $gte: filters.salary };
+  if (filters.workMode !== 'Todos') query.workMode = filters.workMode;
+  return query;
 };

@@ -1,20 +1,24 @@
 import 'dotenv/config';
 import { Telegraf } from 'telegraf';
+import cron from 'node-cron';
 import connectDB from './configs/db.js';
 import setupBotRoutes from './routes/botRoutes.js';
 import { loadSampleJobs } from './services/jobService.js';
+import { sendJobNotifications } from './services/notificationService.js'; // Nova importação
 
-// Configuração inicial
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-// Inicialização do sistema
 const start = async () => {
   await connectDB();
-  await loadSampleJobs(); // Carrega dados iniciais
-  
+  await loadSampleJobs();
+
+  cron.schedule('0 * * * *', () => { // Roda a cada hora em ponto (minuto 0)
+    sendJobNotifications(bot);
+  });
+
   setupBotRoutes(bot);
   bot.launch();
-  console.log('🤖 Bot iniciado com sucesso!');
+  console.log('🤖 Bot operacional!');
 };
 
 start().catch(err => {
@@ -22,6 +26,4 @@ start().catch(err => {
   process.exit(1);
 });
 
-// Encerramento seguro
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// ... (restante do código)
