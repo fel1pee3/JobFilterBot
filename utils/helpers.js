@@ -17,16 +17,42 @@ export const formatFilters = (filters) => `
 🎯 Experiência: ${filters.experience}
 `;
 
-export const formatJobMessage = (job) => `
-*${job.title}* @ ${job.company}
---------------------------------
-📍 *Local:* ${job.location} (${job.workMode})
-💰 *Salário:* ${job.salary?.min ? `R$ ${job.salary.min.toLocaleString('pt-BR')}+` : 'A combinar'}
-📌 *Nível:* ${job.level}
-🛠 *Techs:* ${job.technologies.join(', ') || '-'}
-📅 *Postado:* ${job.postedAt.toLocaleDateString('pt-BR')}
-🔗 [Ver vaga](${job.url})
-`;
+export const formatJobMessage = (job) => {
+  // Dados principais
+  const mainDetails = [
+    `*${job.job_title}* - ${job.employer_name}`,
+    `📍 *Localização:* ${job.job_city || 'Remoto'} (${job.job_country})`,
+    `🏠 *Modelo:* ${job.job_is_remote ? 'Remoto' : 'Presencial'}`,
+    job.job_posted_at_timestamp && 
+      `📆 *Postado há:* ${Math.floor((Date.now() - job.job_posted_at_timestamp * 1000) / 86400000)} dias`,
+  ];
+
+  // Salário e Benefícios
+  const salarySection = job.job_min_salary ? [
+    `💰 *Salário:* ${job.job_min_salary} - ${job.job_max_salary} ${job.job_salary_currency || 'USD'}`,
+    job.job_salary_period && `🔄 *Período:* ${job.job_salary_period}`
+  ] : ['💰 *Salário:* A combinar'];
+
+  // Detalhes Técnicos (Extrai do JSON completo)
+  const techDetails = [
+    job.job_required_skills && `🛠 *Tecnologias:* ${job.job_required_skills.slice(0, 5).join(', ')}`,
+    job.job_required_experience && `📌 *Experiência:* ${job.job_required_experience}`,
+    job.job_employment_type && `📝 *Contrato:* ${job.job_employment_type}`
+  ];
+
+  // Link e Detalhes Adicionais
+  const footer = [
+    job.job_apply_link && `🔗 [Candidatar-se](${job.job_apply_link})`,
+    job.job_publisher && `📰 *Fonte:* ${job.job_publisher}`
+  ];
+
+  return [
+    ...mainDetails.filter(Boolean),
+    ...salarySection,
+    ...techDetails.filter(Boolean),
+    ...footer.filter(Boolean)
+  ].join('\n');
+};
 
 export const extractTechnologies = (text) => {
   const techList = ['JavaScript', 'Python', 'React', 'Node.js', 'Java'];

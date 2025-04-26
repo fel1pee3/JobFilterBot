@@ -70,8 +70,15 @@ export const companysizeCommand = async (ctx) => {
 };
 
 export const experienceCommand = async (ctx) => {
-  const input = ctx.message.text.split(' ')[1] || ('Todos');
-  await updateFilter(ctx, 'experience', input, VALID.EXPERIENCES);
+  const input = ctx.message.text.split(' ')[1];
+  const jsearchMap = {
+    '0-1': 'under_3',
+    '1-3': 'under_3',
+    '3-5': 'more_than_3',
+    '5+': 'more_than_5'
+  };
+  
+  await updateFilter(ctx, 'experience', jsearchMap[input] || 'Todos', VALID.EXPERIENCES);
 };
 
 export const filtersCommand = async (ctx) => {

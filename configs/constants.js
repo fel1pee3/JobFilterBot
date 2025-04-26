@@ -17,7 +17,7 @@ export const VALID = {
   WORKMODES: ['Remoto', 'Híbrido', 'Presencial', 'Todos'],
   CONTRACTS: ['CLT', 'PJ', 'Freelance', 'Temporário', 'Todos'],
   COMPANY_SIZES: ['Startup', 'Média', 'Grande', 'Todos'],
-  EXPERIENCES: ['0-1', '1-3', '3-5', '5+', 'Todos'],
+  EXPERIENCES: ['under_3', 'more_than_3', 'more_than_5'], // Padrão JSearch
   POSTDATES: ['24h', '7d', '30d', 'Todos'],
   SEARCH_TYPES: ['Frontend', 'Backend', 'Fullstack', 'Mobile', 'DevOps', 'Data', 'QA', 'UX/UI', 'Outros', 'Todos']
 };
