@@ -7,6 +7,14 @@ Um bot de Telegram para encontrar vagas de tecnologia filtradas por stack, níve
 
 ---
 
+## Pré-visualização
+
+Confira uma prévia do do projeto:
+
+![Imagem da Aplicação](./images/image-project.png)
+
+---
+
 ## 📦 Tecnologias Usadas
 
 - [Node.js](https://nodejs.org/) 18+
